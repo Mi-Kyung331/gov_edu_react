@@ -2,6 +2,7 @@ import { useState } from "react";
 
 function InputSate3() {
 
+    // 보통 이렇게 사용한다. 예시
     const studentInputValueEmpty = {
         name: "",
         age: "",

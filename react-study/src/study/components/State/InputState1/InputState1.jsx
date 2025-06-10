@@ -2,6 +2,9 @@ import { useState } from "react";
 
 function InputState1() {
 
+    // 하나밖에 없는 Input을 사용할 때
+    // input이 두 개 이상이 될 때 점점 복잡해지기 때문에 여러개의 input을 담을 수 있는 코드를 짜야한다.
+    // InputState2에서 설명
     const [ inputValue1, setInputValue1 ] = useState("");
     const [ output1, setOutput1 ] = useState();
 

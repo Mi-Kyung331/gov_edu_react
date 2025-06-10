@@ -1,12 +1,15 @@
 import { useState } from "react";
 
 function Calculator() {
+
+    // 계산기 만들기
     const [ result, setResult ] = useState(0);
     const [ input, setInput ] = useState("0");
 
     const getResult = () => {
 
         // eval를 사용하지 않으면 써야하는 코드
+        // 너무 길어짐
         let inputText = input;
         let plusNums = [];
         let minusNums = [];
@@ -61,6 +64,7 @@ function Calculator() {
         }
     }
 
+    // 내가 만든 코드 (계산은 되지 않음)
     // const handleOnClick = (e) => {
     //     const num = parseInt(e.target.value);
     //     console.log(typeof(num));

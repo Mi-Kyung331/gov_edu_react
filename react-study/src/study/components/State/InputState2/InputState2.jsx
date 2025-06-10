@@ -3,6 +3,7 @@ import { useState } from "react";
 function InputState2() {
     
     // 여러개의 input 담기
+    // 복잡한 것을 간단하게 표현하기 위해 사용
     const [ inputValue, setInputValue ] = useState({
         t1: "",
         t2: "",

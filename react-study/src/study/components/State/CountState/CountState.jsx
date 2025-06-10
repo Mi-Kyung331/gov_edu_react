@@ -27,7 +27,7 @@ function CountState() {
 
         <button onClick={handleOnClick} value={1}>+1</button>
         <button onClick={handleOnClick} value={-1}>-1</button>
-        {/* 3개를 보내주어야 함. onClick, value, text */}
+        {/* 3개를 보내주어야 한다. onClick, value, text */}
         <CountButton text={"+1"} value={1} onClick={handleOnClick}/>
         <CountButton text={"-1"} value={-1} onClick={handleOnClick}/>
     </div>
