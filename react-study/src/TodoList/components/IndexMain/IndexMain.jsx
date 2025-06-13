@@ -31,7 +31,7 @@ function IndexMain({todoList, setTodoList}) {
             return [...prev, newTodo];
         });
 
-        setInputValue("");
+        setInputValue("");  // 입력창 초기화
     }
 
     const handleCheckBoxOnChange = (e) => {

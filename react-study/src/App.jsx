@@ -13,11 +13,16 @@ import Effect1 from './study/components/Effect/Effect1/Effect1'
 import Effect2 from './study/components/Effect/Effect2/Effect2'
 import Emotion from './study/components/Emotion/Emotion'
 import Emotion2 from './study/components/Emotion/Emotion2'
-import Index from './TodoList/pages'
+import Router1 from './RouterStudy/Router1/Router1'
+import Index from './TodoList/pages/Index'
+import { BrowserRouter } from 'react-router-dom'
+import Router2 from './RouterStudy/Router2/Router2'
+import Router3 from './RouterStudy/Router3/Router3'
+import Router4 from './RouterStudy/Router4/Router4'
 
 function App() {
 
-  return <div>
+  return <BrowserRouter>
     {/* 20250609 */}
     {/* <HelloReact /> */}
     {/* <HelloJsx /> */}
@@ -37,8 +42,16 @@ function App() {
     {/* <Effect2 /> */}
     {/* <Emotion /> */}
     {/* <Emotion2 /> */}
-    <Index />
-  </div>
+
+    {/* 20250612 */}
+    {/* <Index /> */}
+
+    {/* 20250613 */}
+    {/* <Router1 /> */}
+    {/* <Router2 /> */}
+    <Router3 />
+    {/* <Router4 /> */}
+  </BrowserRouter>
 }
 
 export default App;
