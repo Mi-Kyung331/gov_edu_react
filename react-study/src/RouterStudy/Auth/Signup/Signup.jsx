@@ -3,19 +3,29 @@ import { MdOutlineCheckCircle, MdOutlineErrorOutline } from 'react-icons/md';
 import * as s from './styles';
 import React, { useEffect, useState } from 'react';
 import { IoEye, IoEyeOff } from 'react-icons/io5';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 /**
     유효성 검사(Validation Check)
     : 사용자가 입력한 데이터가 정해진 규칙이나 형식에 맞는지 확인하는 과정
+
+    해당코드들은 클린업 과정을 거친 코드들이며
+    나누는 기준은 각각의 코딩들이 어떠한 기능을 하는지에 대한 기준을 나누고 클린업 과정을 거쳐야한다.
+
+    훅 함수는 함수 안에 또다른 훅 함수가 들어가 있다.
+    상태를 만드는 애들은 주로 use가 붙으며, use가 쓰여진 함수들은 use hook 함수로 빼놓는다.
+
  */
 
 // 반복되고 있는 코드 줄이기 (컴포넌트 분리)
-function useSignInAndUpInput({ type, name, placeholder, value, valid}) {
+function useSignInAndUpInput({ id, type, name, placeholder, value, valid}) {
     const STATUS = {
         idle: "idle",
         success: "success",
         error: "error",
     };
+    // inputValue, status는 상태를 나타낸다
     const [ inputValue, setInputValue ] = useState(value);
     const [ status, setStatus ] = useState(STATUS.idle);
 
@@ -33,6 +43,8 @@ function useSignInAndUpInput({ type, name, placeholder, value, valid}) {
             setStatus(valid.regex.test(e.target.value) ? STATUS.success : STATUS.error);
             return;
         }
+
+        setStatus(valid.callback() ? STATUS.success : STATUS.error);
     }
 
     const isEmpty = (str) => {
@@ -40,8 +52,13 @@ function useSignInAndUpInput({ type, name, placeholder, value, valid}) {
     }
 
     return {
-        inputValue,
+        // key, value가 같기 때문에 하나만 사용
+        name: name,
+        value: inputValue,
+        status: status,
+        // 실제 컴포넌트
         element: <SignInAndUpInput 
+            key={id}
             type={type} 
             name={name} 
             placeholder={placeholder} 
@@ -53,12 +70,16 @@ function useSignInAndUpInput({ type, name, placeholder, value, valid}) {
     }
 }
 
-function SignInAndUpInput({type, name, placeholder, value, valid, onChange, onBlur, status, message}) {
+function SignInAndUpInput({type, name, placeholder, value, onChange, onBlur, status, message}) {
+    const { isShow, element: PasswordInputHiddenButton } = usePasswordInputHiddenButton();
     
     return (
         <div css={s.inputItem}>
             <div css={s.inputContainer(status)}>
-                <input type={type} name={name} placeholder={placeholder} value={value} onChange={onChange} onBlur={onBlur} />
+                <input type={type === "password" ? isShow ? "text" : "password" : type} name={name} placeholder={placeholder} value={value} onChange={onChange} onBlur={onBlur} />
+                    {
+                        type === "password" && PasswordInputHiddenButton
+                    }
                     {
                         status !== "idle"
                         && (
@@ -71,36 +92,23 @@ function SignInAndUpInput({type, name, placeholder, value, valid, onChange, onBl
             <InputValidatedMessage status={status} message={message} />
         </div>
     );
-        
 }
 
-function PasswordInputHiddenButton() {
+function usePasswordInputHiddenButton() {
     const [ isShow, setShow ] = useState(false);
-
+    
     const handleOnClick = () => {
         setShow(prev => !prev)
     }
 
-    return <p onClick={handleOnClick}>{isShow ? <IoEyeOff /> : <IoEye />}</p>
+    return {
+        isShow,
+        element: <PasswordInputHiddenButton isShow={isShow} onClick={handleOnClick} />
+    }
 }
 
-// 메시지 커스텀 훅으로 만들기
-function useInputValidatedMessage({defaultMessage}) {
-    const STATUS = {
-        idle: "idle",
-        success: "success",
-        error: "error",
-    }
-    const [ status, setStatus ] = useState(STATUS.idle);
-    const [ message, setMessage ] = useState(defaultMessage || "");
-
-    return {
-        status,
-        setStatus,
-        message,
-        setMessage,
-        element: <InputValidatedMessage status={status} message={message} />
-    }
+function PasswordInputHiddenButton({isShow, onClick}) {
+    return <p onClick={onClick}>{isShow ? <IoEyeOff /> : <IoEye />}</p>
 }
 
 function InputValidatedMessage({status, message}) {
@@ -116,43 +124,12 @@ function InputValidatedMessage({status, message}) {
 
 
 function Singup(props) {
-    const [ inputState, setInputState ] = useState({
-        username: {
-            value: "",
-            message: "아이디는 3자 이상, 15자 이하의 영문자, 숫자를 포함해야 합니다.",
-            regex: /^(?=.*[A-Za-z])(?=.*\d).{3,15}$/,
-            status: "idle", //success(성공), error(오류), idle(초기 대기상태)
-        },
-        password: {
-            value: "",
-            message: "비밀번호는 8자 이상, 20자 이하로 대문자, 소문자, 숫자, 특수문자를 포함해야 합니다.",
-            regex: /^(?=.*[A-Za-z])(?=.*\d)(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/,
-            status: "idle", //success(성공), error(오류), idle(초기 대기상태)
-        },
-        checkPassword: {
-            value: "",
-            message: "비밀번호가 일치하지 않습니다.",
-            status: "idle", //success(성공), error(오류), idle(초기 대기상태)
-        },
-        fullName: {
-            value: "",
-            message: "이름은 한글로 2자 이상, 20자 이하로 입력해 주세요.",
-            regex: /^[가-힣]{2,20}$/,
-            status: "idle", //success(성공), error(오류), idle(초기 대기상태)
-        },
-        email: {
-            value: "",
-            message: "유효한 이메일 주소를 입력해 주세요.",
-            regex: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-            status: "idle", //success(성공), error(오류), idle(초기 대기상태)
-        },
-    });
-
-    const [ showPassword, setShowPassword ] = useState(false);
+    const navigate = useNavigate();
     const [ submitDisabled, setSubmitDisabled ] = useState(true);
 
-    const [ inputs, setInputs ] = useState([
+    const inputs = [
         {
+            id: 1,
             type: "text",
             name: "username",
             placeholder: "사용자이름",
@@ -164,6 +141,7 @@ function Singup(props) {
             },
         },
         {
+            id: 2,
             type: "password",
             name: "password",
             placeholder: "비밀번호",
@@ -175,6 +153,7 @@ function Singup(props) {
             },
         },
         {
+            id: 3,
             type: "password",
             name: "checkPassword",
             placeholder: "비밀번호 확인",
@@ -182,61 +161,71 @@ function Singup(props) {
             valid: {
                 enabled: false,
                 regex: null,
+                callback: () => inputItems[1].inputValue === inputItems[2].inputValue,
                 message: "비밀번호가 일치하지 않습니다.",
             },
         },
-    ]);
+        {
+            id: 4,
+            type: "text",
+            name: "fullName",
+            placeholder: "성명",
+            value: "",
+            valid: {
+                enabled: true,
+                regex: /^[가-힣]{2,20}$/,
+                message: "이름은 한글로 2자 이상, 20자 이하로 입력해 주세요.",
+            },
+        },
+        {
+            id: 5,
+            type: "email",
+            name: "email",
+            placeholder: "이메일",
+            value: "",
+            valid: {
+                enabled: true,
+                regex: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+                message: "유효한 이메일 주소를 입력해 주세요.",
+            },
+        },
+    ];
 
+    // input 호출
     const inputItems = inputs.map(input => useSignInAndUpInput(input));
-
-    const handleOnChange = (e) => {
-        setInputState(prev => ({
-            ...prev,
-            [e.target.name] : {
-                ...prev[e.target.name],
-                value: e.target.value,
-            }
-        }));
-    }
-
-    const handleOnBlur = (e) => {
-        // 무조건 한 글자 이상이 있어야 검사가능
-        if (!(/^.+$/.test(inputState[e.target.name].value))) {
-            setInputState(prev => ({
-                ...prev,
-                [e.target.name]: {
-                    ...prev[e.target.name],
-                    status: "idle",
-                }
-            }));
-            return;
-        }
-
-        if (e.target.name === "checkPassword") {
-            if (inputState.password.status === "success") {
-                setInputState(prev => ({
-                    ...prev,
-                    "checkPassword" : {
-                        ...prev["checkPassword"],
-                        status: prev["checkPassword"].value === prev["password"].value ? "success" : "error",
-                    }
-                }));
-            }
-            return;
-        }
-
-        setInputState(prev => ({
-            ...prev,
-            [e.target.name]: {
-                ...prev[e.target.name],
-                status: prev[e.target.name].regex.test(prev[e.target.name].value) ? "success" : "error",
-            }
-        }));
-    }
+    // [input, input, input] → [{useSignInAndUpInput(리턴값)}, useSignInAndUpInput(리턴값)]
 
     useEffect(() => {
-        setSubmitDisabled(!!Object.values(inputState).map(obj => obj.status).find(status => status !== "success"));
-    }, [inputState]);
+        setSubmitDisabled(!!inputItems.find(inputItem => inputItem.status !== "success"))
+    }, [inputItems]);
+
+    const handleRegisterOnClick = async () => {
+        // async사용 > await 사용 가능
+        const url = "http://localhost:8080/api/users";
+
+        let data = {};
+        inputItems.forEach(inputItem => {
+            data = {
+                ...data,
+                [inputItem.name]: inputItem.value,
+            }
+        })
+
+        try {
+            const response = await axios.post(url, data);
+            alert("사용자 등록 완료");
+
+            navigate("/users/signin", {
+                state: {
+                    username: response.data.username,
+                    password: inputItems.find(inputItem => inputItem.name === "password").value,
+                }
+            });
+        } catch(error) {
+            alert("사용자 등록 오류");
+        }
+
+    }
 
     return (
         <div css={s.layout}>
@@ -248,7 +237,7 @@ function Singup(props) {
                 }
             </div>
 
-            <button css={s.submitButton} disabled={submitDisabled}>가입하기</button>
+            <button css={s.submitButton} disabled={submitDisabled} onClick={handleRegisterOnClick}>가입하기</button>
 
         </div>
     );
