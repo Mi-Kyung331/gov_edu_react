@@ -5,7 +5,7 @@ import Signup from '../Signup/Signup';
 import NotFound from '../NotFound/NotFound';
 
 // 로그인이 된 이후에는 들어갈 수 없는 페이지
-function UnAuthRouter(props) {
+function UnAuthRouter() {
     return (
         <Routes>
             <Route path='/signin' element={<Signin />} />

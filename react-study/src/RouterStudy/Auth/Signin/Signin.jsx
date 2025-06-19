@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { MdOutlineCheckCircle, MdOutlineErrorOutline } from 'react-icons/md';
 import { IoEye, IoEyeOff } from 'react-icons/io5';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useRefreshStore } from '../Stores/storeStudy';
 
 
 /**
@@ -117,8 +118,11 @@ function InputValidatedMessage({status, message}) {
     return <></>
 }
 
-function Signin(props) {
+function Signin() {
+    const navigate = useNavigate();
     const location = useLocation();
+    // const { refresh } = useRefreshStore();
+    const { setValue:setRefresh } = useRefreshStore();
     const [ submitDisabled, setSubmitDisabled ] = useState(true);
     const inputs = [
         {
@@ -162,7 +166,11 @@ function Signin(props) {
     }, [inputItems]);
 
     const handleRegisterOnClick = async () => {
-        const url = "http://localhost:8080/api/users";
+        const url = "http://localhost:8080/api/users/login";
+
+        // 컨트롤러 메소드명 Login
+        // Dto명 LoginDto
+        // Post요청
 
         let data = {};
 
@@ -173,11 +181,19 @@ function Signin(props) {
             }
         });
 
+        // 로그인
         try {
-            await axios.post(url, data);
-            alert("사용자 등록 완료");
+            const response = await axios.post(url, data);
+            const accessToken = response.data?.accessToken;
+            if (!!accessToken) {
+                localStorage.setItem("AccessToken", accessToken);
+                // refresh();
+                setRefresh(prev => true);
+                navigate("/");
+            }
         } catch(error) {
-            alert("사용자 등록 오류");
+            const { response, status } = error;
+            alert("로그인 오류");
         }
         
     }
