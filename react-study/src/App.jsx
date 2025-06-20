@@ -20,8 +20,20 @@ import Router2 from './RouterStudy/Router2/Router2'
 import Router3 from './RouterStudy/Router3/Router3'
 import Router4 from './RouterStudy/Router4/Router4'
 import MainRouter from './RouterStudy/Auth/Routers/MainRouter'
+import MainRouterReactQuery from './RouterStudy/Auth/Routers/MainRouterReactQuery'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 function App() {
+
+  const queryClient = new QueryClient({
+   defaultOptions: {
+    queries: {
+      // refetchOnWindowFocus: false,
+      staleTime: 1000 * 60,
+      retry: 0,
+    }
+   }
+  });
 
   return <BrowserRouter>
     {/* 20250609 */}
@@ -53,8 +65,13 @@ function App() {
     {/* <Router3 /> */}
     {/* <Router4 /> */}
 
-    {/* 20250616 */}
-    <MainRouter />
+    {/* 20250616 ~ */}
+    {/* <MainRouter /> */}
+
+    <QueryClientProvider client={queryClient} >
+      <MainRouterReactQuery />
+    </QueryClientProvider>
+
   </BrowserRouter>
 }
 
